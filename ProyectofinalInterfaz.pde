@@ -1,10 +1,9 @@
-//
 import java.util.Random;
 import javax.swing.JOptionPane;
 
-int n;  // Número de filas y columnas del laberinto
+int n;
 int[][] laberinto;
-int inicioX, inicioY, finX, finY; // Coordenadas de inicio y fin del laberinto
+int inicioX, inicioY, finX, finY; 
 int caminosTrampa;
 
 void setup() {
@@ -24,47 +23,48 @@ void setup() {
     }
   }
 
-  // Validar coordenadas de inicio
   while (true) {
     try {
       String inputInicioX = JOptionPane.showInputDialog("Digite la coordenada de inicio en X:");
       inicioX = Integer.parseInt(inputInicioX);
       String inputInicioY = JOptionPane.showInputDialog("Digite la coordenada de inicio en Y:");
       inicioY = Integer.parseInt(inputInicioY);
-      if (validarCoordenadas(inicioX, n) && validarCoordenadas(inicioY, n)) {
+      if (validarCoordenadas(inicioX, n) || validarCoordenadas(inicioY, n)) {
         break;
       } else {
-        JOptionPane.showMessageDialog(null, "Las coordenadas deben estar dentro del rango del tamaño del laberinto. Inténtelo nuevamente.");
+        JOptionPane.showMessageDialog(null, "Las coordenadas deben estar en las fronteras del laberinto. Inténtelo nuevamente.");
       }
     } catch (Exception e) {
       JOptionPane.showMessageDialog(null, "Ingrese un número válido. Inténtelo nuevamente.");
     }
   }
 
-  // Validar coordenadas de fin
   while (true) {
     try {
       String inputFinX = JOptionPane.showInputDialog("Digite la coordenada de fin en X:");
       finX = Integer.parseInt(inputFinX);
       String inputFinY = JOptionPane.showInputDialog("Digite la coordenada de fin en Y:");
       finY = Integer.parseInt(inputFinY);
-      if (validarCoordenadas(finX, n) && validarCoordenadas(finY, n)) {
+      if (validarCoordenadas(finX, n) || validarCoordenadas(finY, n)) {
         break;
       } else {
-        JOptionPane.showMessageDialog(null, "Las coordenadas deben estar dentro del rango del tamaño del laberinto. Inténtelo nuevamente.");
+        JOptionPane.showMessageDialog(null, "Las coordenadas deben estar en las fronteras del laberinto. Inténtelo nuevamente.");
       }
     } catch (Exception e) {
       JOptionPane.showMessageDialog(null, "Ingrese un número válido. Inténtelo nuevamente.");
     }
   }
 
-  // Inicializar la matriz laberinto después de obtener el tamaño
   laberinto = new int[n][n];
-
   caminosTrampa = n;
-  inicioLaberintoRecursivo(laberinto, n, 0, 0);
-  generarCaminoAleatorio(laberinto, finX, finY, inicioX, inicioY);
-  generarCaminoTrampa(laberinto, n, finX, finY, caminosTrampa, 0);
+
+  int rest = Integer.parseInt(JOptionPane.showInputDialog("Digite 1 si quiere ver el camino y 2 si quiere Jugar"));
+  if (rest == 1) {
+    generarCaminoAleatorio(laberinto, finX, finY, inicioX, inicioY);
+  } else {
+    generarCaminoAleatorio(laberinto, finX, finY, inicioX, inicioY);
+    generarCaminoTrampa(laberinto, n, finX, finY, caminosTrampa, 0);
+  }
 }
 
 void draw() {
@@ -73,23 +73,21 @@ void draw() {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       if (laberinto[i][j] == 1) {
-        fill(255); // Espacios para moverse
+        fill(255);
       } else if (laberinto[i][j] == 0) {
-        fill(0);   // Espacios bloqueados
+        fill(2, 60, 104);
       }
       rect(j * width / n, i * height / n, width / n, height / n);
     }
   }
 
-  // Visualizar la posición inicial y final
-  fill(0, 255, 0); // Inicio en verde
+  fill(0, 255, 0);
   rect(inicioX * width / n, inicioY * height / n, width / n, height / n);
   fill(255, 0, 0); // Fin en rojo
   rect(finX * width / n, finY * height / n, width / n, height / n);
 }
 
 void keyPressed() {
-  // Mover al usuario con las teclas de flecha
   if (keyCode == UP && inicioY > 0 && laberinto[inicioY - 1][inicioX] == 1) {
     inicioY--;
   } else if (keyCode == DOWN && inicioY < n - 1 && laberinto[inicioY + 1][inicioX] == 1) {
@@ -100,9 +98,8 @@ void keyPressed() {
     inicioX++;
   }
 
-  // Verificar si el usuario ha llegado al final
   if (inicioX == finX && inicioY == finY) {
-    println("¡Felicidades! Has llegado al final del laberinto.");
+    JOptionPane.showMessageDialog(null, "¡Felicidades! Has llegado al final del laberinto.\nGracias por jugar.");
     noLoop(); // Detener el bucle de dibujo
   }
 }
@@ -118,35 +115,32 @@ public static void inicioLaberintoRecursivo(int laberinto[][], int n, int i, int
   }
 }
 
-public static void generarCaminoAleatorio(int[][] laberinto, int finY, int finX, int x, int y) {
-  Random random = new Random();
+    static void generarCaminoAleatorio(int[][] laberinto, int finX, int finY, int x, int y) {
+        Random random = new Random();
 
-  if (x != finX || y != finY) {
+        if (x == finX && y == finY) {
+            return;
+        }
 
-    if (random.nextBoolean()) {
-      if (x < finX) {
+              if (random.nextBoolean()) {
+                if (x < finX) {
+                    x++;
+                }else{
+                    x--;
+                }
+                  
+              } else {
+                  if (y < finY) {
+                    y++;
+                  }else{
+                    y--;
+                  }
+              }
+
         laberinto[y][x] = 1;
-        generarCaminoAleatorio(laberinto, finY, finX, x + 1, y);
-      } else if (x > finX) {
-        laberinto[y][x] = 1;
-        generarCaminoAleatorio(laberinto, finY, finX, x - 1, y);
-      } else {
-        generarCaminoAleatorio(laberinto, finY, finX, x, y);
-      }
-    } else {
-      if (y < finY) {
-        laberinto[y][x] = 1;
-        generarCaminoAleatorio(laberinto, finY, finX, x, y + 1);
-      } else if (y > finY) {
-        laberinto[y][x] = 1;
-        generarCaminoAleatorio(laberinto, finY, finX, x, y - 1);
-      } else {
-        generarCaminoAleatorio(laberinto, finY, finX, x, y);
-      }
+
+        generarCaminoAleatorio(laberinto, finX, finY, x, y);
     }
-  }
-  laberinto[finX][finY] = 1;
-}
 
 void generarCaminoTrampa(int[][] laberinto, int n, int finX, int finY, int caminosTrampa, int j) {
   if (j < caminosTrampa) {
@@ -182,10 +176,10 @@ void generarCaminoTrampa(int[][] laberinto, int n, int finX, int finY, int camin
   }
 }
 
-boolean validarTamaño(int n) {
-  return n >= 2;
-}
+    static boolean validarTamaño(int n) {
+        return n >= 2;
+    }
 
-boolean validarCoordenadas(int coord, int n) {
-  return coord >= 1 && coord <= n;
-}
+    static boolean validarCoordenadas(int coord, int n) {
+        return coord == 0 || coord == n - 1;
+    }
